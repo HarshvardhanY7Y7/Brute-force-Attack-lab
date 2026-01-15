@@ -1,0 +1,66 @@
+# MITRE ATT&CK Framework Mapping
+
+## Primary Technique
+**T1110 - Brute Force**  
+**Tactic:** Credential Access  
+**URL:** https://attack.mitre.org/techniques/T1110/
+
+### Sub-Techniques Demonstrated
+- **T1110.001** - Password Guessing
+- **T1110.003** - Password Spraying (variant)
+
+## Attack Chain Mapping
+
+| Phase | MITRE Technique | Implementation |
+|-------|----------------|----------------|
+| Reconnaissance | T1595.002 - Vulnerability Scanning | Nmap port scan |
+| Reconnaissance | T1589 - Gather Victim Identity | WPScan user enum |
+| Credential Access | T1110.001 - Password Guessing | Hydra brute force |
+| Initial Access | T1078 - Valid Accounts | Admin login |
+
+## Detection Coverage
+
+### D3FEND Countermeasures
+- **D3-LAM** - Local Account Monitoring
+- **D3-AL** - Account Locking
+- **D3-RUAA** - Resource Access Authentication Analysis
+
+### MITRE Shield Active Defense
+- **DTE0032** - User Monitoring
+- **DTE0034** - System Activity Monitoring
+
+## Adversary Emulation Profile
+
+```yaml
+Technique: T1110
+Platform: Web Application
+Permissions: User
+Impact: High
+Detection: Medium
+
+Tools:
+  - Hydra
+  - Medusa (alternative)
+  - Burp Suite (alternative)
+
+Data Sources:
+  - Application logs
+  - Authentication logs
+  - Network traffic
+```
+
+## Defensive Mapping
+
+| Defense | NIST CSF | CIS Control |
+|---------|----------|-------------|
+| Account Lockout | PR.AC-1 | 4.3 |
+| 2FA | PR.AC-7 | 6.3 |
+| Rate Limiting | DE.CM-1 | 16.11 |
+| Log Monitoring | DE.AE-3 | 8.5 |
+
+## Related Techniques
+
+- **T1078** - Valid Accounts (post-compromise)
+- **T1110.002** - Password Cracking (offline variant)
+- **T1133** - External Remote Services
+- **T1021** - Remote Services

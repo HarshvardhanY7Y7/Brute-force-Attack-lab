@@ -1,0 +1,105 @@
+# Lab Setup Guide
+
+## Prerequisites
+- VirtualBox 6.1+
+- 8GB RAM minimum
+- 50GB disk space
+
+## VM Configuration
+
+### Attacker VM - Kali Linux
+**Download:** https://www.kali.org/get-kali/
+
+```
+CPU: 2 cores
+RAM: 2GB
+Network: Host-Only Adapter (vboxnet0)
+IP: 192.168.56.102/24
+```
+
+### Target VM - Ubuntu + WordPress
+**Base:** Ubuntu Server 20.04 LTS
+
+```
+CPU: 2 cores
+RAM: 2GB
+Network: Host-Only Adapter (vboxnet0)
+IP: 192.168.56.101/24
+```
+
+## Target Installation Steps
+
+### 1. Install LAMP Stack
+```bash
+sudo apt update
+sudo apt install apache2 mysql-server php libapache2-mod-php php-mysql -y
+```
+
+### 2. Install WordPress
+```bash
+cd /tmp
+wget https://wordpress.org/latest.tar.gz
+tar -xvzf latest.tar.gz
+sudo mv wordpress /var/www/html/
+sudo chown -R www-data:www-data /var/www/html/wordpress
+```
+
+### 3. Configure MySQL
+```bash
+sudo mysql -u root
+CREATE DATABASE wordpress;
+CREATE USER 'wpuser'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wpuser'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+### 4. Intentional Vulnerabilities
+```bash
+# Create weak admin account
+Username: admin
+Password: password123
+
+# Disable rate limiting
+sudo a2dismod evasive
+sudo systemctl restart apache2
+```
+
+## Network Configuration
+
+### VirtualBox Host-Only Network
+```bash
+# On host machine
+VBoxManage hostonlyif create
+VBoxManage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1 --netmask 255.255.255.0
+```
+
+## Verification
+
+### Test Connectivity
+```bash
+# From Kali
+ping 192.168.56.101
+
+# Test WordPress
+curl http://192.168.56.101/wordpress/wp-login.php
+```
+
+### Verify Isolation
+```bash
+# Ensure no internet access on isolated network
+ping 8.8.8.8  # Should fail
+```
+
+## Tools Installation (Kali)
+
+```bash
+sudo apt update
+sudo apt install hydra nmap wpscan -y
+
+# Verify rockyou.txt
+sudo gunzip /usr/share/wordlists/rockyou.txt.gz
+```
+
+## Security Note
+⚠️ Keep this lab isolated from production networks. Never connect to the internet during testing.

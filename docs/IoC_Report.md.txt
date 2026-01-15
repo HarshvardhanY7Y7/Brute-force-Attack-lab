@@ -1,0 +1,57 @@
+# Indicators of Compromise Report
+
+## Attack Details
+**Attack Type:** Brute Force (MITRE ATT&CK T1110)  
+**Target:** WordPress Login Portal  
+**Duration:** ~5 minutes  
+**Attempts:** ~1,200 password combinations
+
+## Network Indicators
+
+| Indicator Type | Value | Confidence |
+|----------------|-------|------------|
+| Source IP | 192.168.56.102 | High |
+| Target Port | 80/TCP (HTTP) | High |
+| Request Rate | 240+ req/min | High |
+| User-Agent | Hydra v9.x | High |
+
+## Application Log Indicators
+
+### Failed Authentication Pattern
+```
+[timestamp] POST /wp-login.php - 200 - User: admin, Status: Failed
+[timestamp] POST /wp-login.php - 200 - User: admin, Status: Failed
+[timestamp] POST /wp-login.php - 200 - User: admin, Status: Failed
+[...repeating pattern...]
+[timestamp] POST /wp-login.php - 302 - User: admin, Status: Success
+```
+
+### Behavioral Signatures
+- Sequential password attempts
+- No delays between requests
+- Same username, varying passwords
+- Immediate success after pattern break
+
+## Detection Rules
+
+### Splunk Query
+```spl
+index=web_logs uri="/wp-login.php" status=200 
+| stats count by src_ip, user 
+| where count > 10
+```
+
+### Snort Rule
+```
+alert tcp any any -> $HOME_NET 80 (msg:"Possible Brute Force Attack"; \
+content:"POST"; http_method; content:"/wp-login.php"; http_uri; \
+threshold:type threshold, track by_src, count 10, seconds 60; \
+sid:1000001; rev:1;)
+```
+
+## Mitigation Status
+- [x] Account lockout implemented
+- [x] Fail2Ban configured
+- [x] 2FA enforced
+- [x] Rate limiting enabled
+- [ ] SIEM alerting configured
