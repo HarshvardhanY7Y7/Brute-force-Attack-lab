@@ -1,0 +1,94 @@
+# Sample Tool Outputs
+
+## Nmap Scan Results
+
+```
+Starting Nmap 7.94 ( https://nmap.org )
+Nmap scan report for 192.168.56.101
+Host is up (0.00045s latency).
+Not shown: 65533 closed tcp ports (reset)
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.5
+80/tcp open  http    Apache httpd 2.4.41
+|_http-title: WordPress Site
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+MAC Address: 08:00:27:XX:XX:XX (Oracle VirtualBox)
+
+Service detection performed. Scan time: 12.34 seconds
+```
+
+## WPScan User Enumeration
+
+```
+[i] User(s) Identified:
+
+[+] admin
+ | Found By: Author Posts - Display Name (Passive Detection)
+ | Confirmed By:
+ |  Rss Generator (Passive Detection)
+ |  Author Id Brute Forcing - Author Pattern (Aggressive Detection)
+
+[+] Enumeration complete. Time: 00:00:28
+```
+
+## Hydra Brute Force Output
+
+```
+Hydra v9.5 starting at 2025-06-15 14:22:30
+[DATA] max 16 tasks per 1 server, overall 16 tasks
+[DATA] attacking http-post-form://192.168.56.101:80/wp-login.php
+[ATTEMPT] target 192.168.56.101 - login "admin" - pass "123456"
+[ATTEMPT] target 192.168.56.101 - login "admin" - pass "password"
+[ATTEMPT] target 192.168.56.101 - login "admin" - pass "12345678"
+[...1,200+ attempts...]
+[80][http-post-form] host: 192.168.56.101   login: admin   password: password123
+[STATUS] attack finished for 192.168.56.101
+
+1 of 1 target successfully completed, 1 valid password found
+Hydra finished at 2025-06-15 14:27:15
+```
+
+## Apache Access Log Sample
+
+```
+192.168.56.102 - - [15/Jun/2025:14:22:31 +0000] "POST /wp-login.php HTTP/1.1" 200 1234
+192.168.56.102 - - [15/Jun/2025:14:22:31 +0000] "POST /wp-login.php HTTP/1.1" 200 1234
+192.168.56.102 - - [15/Jun/2025:14:22:32 +0000] "POST /wp-login.php HTTP/1.1" 200 1234
+192.168.56.102 - - [15/Jun/2025:14:22:32 +0000] "POST /wp-login.php HTTP/1.1" 200 1234
+[...repeated pattern...]
+192.168.56.102 - - [15/Jun/2025:14:27:14 +0000] "POST /wp-login.php HTTP/1.1" 302 1567
+192.168.56.102 - - [15/Jun/2025:14:27:15 +0000] "GET /wp-admin/ HTTP/1.1" 200 8934
+```
+
+## WordPress Auth Log
+
+```
+[15-Jun-2025 14:22:31 UTC] Authentication failure for admin from 192.168.56.102
+[15-Jun-2025 14:22:31 UTC] Authentication failure for admin from 192.168.56.102
+[15-Jun-2025 14:22:32 UTC] Authentication failure for admin from 192.168.56.102
+[...1,197 failures...]
+[15-Jun-2025 14:27:14 UTC] Authentication success for admin from 192.168.56.102
+```
+
+## Attack Timeline
+
+```
+14:22:30 - Attack initiated
+14:22:31 - First login attempt
+14:25:00 - 600 attempts completed (50% progress)
+14:27:14 - Successful credential found
+14:27:15 - Attack terminated
+Total duration: 4 minutes 45 seconds
+```
+
+## Statistics Summary
+
+```
+Total Attempts: 1,203
+Failed Attempts: 1,202
+Successful Attempts: 1
+Attack Rate: ~4.2 attempts/second
+Time to Compromise: 285 seconds
+Credential Found: admin:password123
+```
